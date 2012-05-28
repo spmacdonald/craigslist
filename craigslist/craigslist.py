@@ -21,7 +21,7 @@ def register_extractor(*args):
 
     e.g., 
 
-        @register_extracotr('jjj', 'hhh')
+        @register_extractor('jjj', 'hhh')
         def my_extractor(text):
             ...
     """
@@ -29,7 +29,7 @@ def register_extractor(*args):
         for category in args:
             _extractor_registry[category] = fn
         def inner_function(*args, **kwargs):
-            fn(*args, **kwargs)
+            return fn(*args, **kwargs)
         return inner_function
     return decorator
 
