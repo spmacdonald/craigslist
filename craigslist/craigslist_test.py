@@ -1,5 +1,8 @@
 import craigslist
+import fixtures
 import unittest
+
+from BeautifulSoup import BeautifulSoup
 
 
 class TestCraigslist(unittest.TestCase):
@@ -60,6 +63,45 @@ class TestCraigslist(unittest.TestCase):
         self._test_price_formatting(1000)
         self._test_price_formatting(2000)
         self._test_price_formatting(100000)
+
+    def test_extract_item_for_sale_no_price(self):
+        """
+        Verify that `craigslist.extract_item_for_sale` works with a mock
+        Craigslist post title that lacks a price.
+        """
+        result = craigslist.get_items_for_category('sss', fixtures.for_sale[0])
+        self.assertEqual(
+            result[0]['link'],
+            'http://seattle.craigslist.org/tac/ppd/2992142629.html')
+
+        self.assertEqual(
+            result[0]['desc'], 'SUPER DRYER SALE FROM $99 ON UP')
+
+        self.assertEqual(
+            result[0]['location'], ' (PUYALLUP)')
+
+        self.assertFalse('price' in result[0])
+
+    def test_extract_item_for_sale_with_price(self):
+        """
+        Verify that `craigslist.extract_item_for_sale` works with a mock
+        Craigslist post title that has a price.
+        """
+        result = craigslist.get_items_for_category('sss', fixtures.for_sale[1])
+
+        self.assertEqual(
+            result[0]['link'],
+            "http://seattle.craigslist.org/tac/ppd/3007461942.html")
+
+        self.assertEqual(
+            result[0]['desc'], 'SAMSUNG STAINLESS DISHWASHERS (NEW)')
+
+        self.assertEqual(
+            result[0]['location'], ' (PUYALLUP)')
+
+        self.assertEqual(
+            result[0]['price'], 599.00)
+
 
 
 if __name__ == '__main__':

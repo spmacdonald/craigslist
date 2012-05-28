@@ -52,7 +52,7 @@ def get_price(text):
     Try to extract a price from `text`.
     """
     money = re.compile('^\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d{2})?$')
-    matches = money.match(text.strip())
+    matches = money.match(text.replace('-', '').strip())
     price = matches and matches.group(0) or None
     
     if price:
@@ -141,22 +141,19 @@ def extract_housing(item):
     return result
 
 
-def extract_results(raw_results, category):
-    """
-    Extract data about a single Craiglist search result from HTML into a dict,
-    using BeautifulSoup.
-    """
-    results = []
+def get_soup(text):
+    return BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
 
-    for el in raw_results.nextGenerator():
-        if not hasattr(el, 'name') or el.name == 'h4':
-            continue
 
-        if el.name == 'p':
-            extractor = get_extractor(category)
-            results.append(extractor(el))
+def get_items_for_category(category, text):
+    items = []
+    content = get_soup(text)
 
-    return results
+    for el in content.findAll('p', attrs={'class': 'row'}):
+        extractor = get_extractor(category)
+        items.append(extractor(el))
+
+    return items
 
 
 # Craigslist search types. These values indicate whether to seach all text in
@@ -174,7 +171,6 @@ def search(location, category, query, search_type=SEARCH_ALL):
     `search_type` indicates whether this is an all-text search ('A') or just a
     title search ('T').
     """
-    results = []
     valid_search_types = [SEARCH_ALL, SEARCH_TITLES]
 
     if not search_type in valid_search_types:
@@ -185,12 +181,4 @@ def search(location, category, query, search_type=SEARCH_ALL):
     search_url = '%ssearch/%s?query=%s&srchType=A' % (
         location, category, query)
 
-    content = BeautifulSoup(
-        requests.get(search_url).text,
-        convertEntities=BeautifulSoup.HTML_ENTITIES)
-
-    for raw_results in content.findAll('h4'):
-        results = results + extract_results(raw_results, category)
-
-    return results
-
+    return get_items_for_category(category, requests.get(search_url).text)
