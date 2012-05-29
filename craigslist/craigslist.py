@@ -67,7 +67,7 @@ def extract_item_for_sale(item):
     result['date'] = item.contents[2].replace('-', '').strip()
     result['link'] = item.contents[3].get('href')
     result['desc'] = item.contents[3].text.replace('-', '').strip()
-    result['location'] = item.contents[5].string.strip()
+    result['location'] = item.contents[5].text.strip()
 
     price = get_price(item.contents[4])
 
