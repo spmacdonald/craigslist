@@ -64,10 +64,10 @@ def extract_item_for_sale(item):
     """ Extract a Craigslist item for sale. """
     result = {}
     result['image'] = item.contents[1].get('id')
-    result['date'] = item.contents[2].strip().rstrip('- ')
+    result['date'] = item.contents[2].replace('-', '').strip()
     result['link'] = item.contents[3].get('href')
-    result['desc'] = item.contents[3].text
-    result['location'] = item.contents[5].string
+    result['desc'] = item.contents[3].text.replace('-', '').strip()
+    result['location'] = item.contents[5].string.strip()
 
     price = get_price(item.contents[4])
 
@@ -81,7 +81,7 @@ def extract_item_for_sale(item):
 def extract_job(item):
     """ Extra a Craigslist job posting. """
     result = {}
-    result['date'] = item.contents[0].strip().rstrip('- ')
+    result['date'] = item.contents[0].replace('-', '').strip()
     result['link'] = item.contents[1].get('href')
     result['desc'] = item.contents[1].text
     result['location'] = item.contents[3].text
@@ -128,11 +128,11 @@ def extract_housing(item):
             else:
                 result['desc'] = detail
     else:
-        result['desc'] = item.contents[1].text.strip()
+        result['desc'] = item.contents[1].text.replace('-', '').strip()
 
     result['link'] = item.contents[1].get('href')
-    result['date'] = item.contents[0].strip().rstrip('- ')
-    result['location'] = item.contents[3].text
+    result['date'] = item.contents[0].replace('-', '').strip()
+    result['location'] = item.contents[3].text.strip()
 
     small = item.find('small')
     if small:
@@ -147,9 +147,11 @@ def get_soup(text):
 
 def get_items_for_category(category, text):
     items = []
-    content = get_soup(text)
 
-    for el in content.findAll('p', attrs={'class': 'row'}):
+    # The second blockquote contains the items. It isn't named.
+    content = get_soup(text).findAll('blockquote')[1]
+
+    for el in content.findAll('p'):
         extractor = get_extractor(category)
         items.append(extractor(el))
 

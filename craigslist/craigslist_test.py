@@ -72,13 +72,13 @@ class TestCraigslist(unittest.TestCase):
         result = craigslist.get_items_for_category('sss', fixtures.for_sale[0])
         self.assertEqual(
             result[0]['link'],
-            'http://seattle.craigslist.org/tac/ppd/2992142629.html')
+            'http://portland.craigslist.org/mlt/bks/3032571105.html')
 
         self.assertEqual(
-            result[0]['desc'], 'SUPER DRYER SALE FROM $99 ON UP')
+            result[0]['desc'], 'Ball Python Book')
 
         self.assertEqual(
-            result[0]['location'], ' (PUYALLUP)')
+            result[0]['location'], '(SE Portland)')
 
         self.assertFalse('price' in result[0])
 
@@ -91,16 +91,16 @@ class TestCraigslist(unittest.TestCase):
 
         self.assertEqual(
             result[0]['link'],
-            "http://seattle.craigslist.org/tac/ppd/3007461942.html")
+            "http://portland.craigslist.org/mlt/for/3038377527.html")
 
         self.assertEqual(
-            result[0]['desc'], 'SAMSUNG STAINLESS DISHWASHERS (NEW)')
+            result[0]['desc'], 'Python Aquarium Cleaner With Extension')
 
         self.assertEqual(
-            result[0]['location'], ' (PUYALLUP)')
+            result[0]['location'], '(SE Portland)')
 
         self.assertEqual(
-            result[0]['price'], 599.00)
+            result[0]['price'], 20.00)
 
 
 
