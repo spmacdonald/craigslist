@@ -1,4 +1,6 @@
+import craigslist
 import os
+
 from setuptools import setup
 
 def read(fname):
@@ -11,7 +13,7 @@ setup(
     author='Andrew Brookins',
     author_email='a@andrewbrookins.com',
     url='https://github.com/abrookins/craigslist',
-    version='0.1',
+    version=craigslist.__version__,
     packages=['craigslist'],
     install_requires=[
         'BeautifulSoup==3.2.0',
