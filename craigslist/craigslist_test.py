@@ -6,7 +6,7 @@ from BeautifulSoup import BeautifulSoup
 
 
 class TestCraigslist(unittest.TestCase):
-    
+
     def test_register_extractor(self):
         """ Verify that we can register and retreive an extractor function. """
 
@@ -72,13 +72,14 @@ class TestCraigslist(unittest.TestCase):
         result = craigslist.get_items_for_category('sss', fixtures.for_sale[0])
         self.assertEqual(
             result[0]['link'],
-            'http://portland.craigslist.org/mlt/bks/3032571105.html')
+            "http://portland.craigslist.org/clk/sys/3058025999.html")
 
         self.assertEqual(
-            result[0]['desc'], 'Ball Python Book')
+            result[0]['desc'],
+            'i want to trade my laptop for a utility trailer')
 
         self.assertEqual(
-            result[0]['location'], '(SE Portland)')
+            result[0]['location'], '(Kelso)')
 
         self.assertFalse('price' in result[0])
 
@@ -91,17 +92,16 @@ class TestCraigslist(unittest.TestCase):
 
         self.assertEqual(
             result[0]['link'],
-            "http://portland.craigslist.org/mlt/for/3038377527.html")
+            "http://portland.craigslist.org/mlt/sys/3058061021.html")
 
         self.assertEqual(
-            result[0]['desc'], 'Python Aquarium Cleaner With Extension')
+            result[0]['desc'], 'D525MWV Intel Atom 1.8Ghz MotherBoard')
 
         self.assertEqual(
-            result[0]['location'], '(SE Portland)')
+            result[0]['location'], '(Ne Portland)')
 
         self.assertEqual(
-            result[0]['price'], 20.00)
-
+            result[0]['price'], 50.00)
 
 
 if __name__ == '__main__':

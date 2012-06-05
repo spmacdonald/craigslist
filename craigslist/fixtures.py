@@ -2,19 +2,32 @@ for_sale = [
     """
     <blockquote></blockquote>
     <blockquote>
-    <p class="row">
-    <span class="ih" id="images:5Hf5J55Md3F43Jf3Nfc5m06cb074ec1a81b8f.jpg">&nbsp;</span>
-     May 26 - <a href="http://portland.craigslist.org/mlt/bks/3032571105.html">Ball Python Book -</a>
-     <font size="-1"> (SE Portland)</font> <small class="gc"><a href="/bks/">books & magazines - by owner</a></small> <span class="p"> pic</span><br class="c"> </p>
-    </blockquote>
+        <p class="row">
+            <span class="ih">&nbsp;</span>
+            <span class="itemdate"></span>
+            <a href="http://portland.craigslist.org/clk/sys/3058025999.html">i want to trade my laptop for a utility trailer</a>
+            <span class="itemsep"> - </span>
+            <span class="itemph"></span>
+            <span class="itempp"></span>
+            <span class="itempn"><font size="-1"> (Kelso)</font></span>
+            <span class="itempx"></span>
+            <span class="itemcg"> <small class="gc"><a href="/sys/">computers - by owner</a></small></span><br class="c">
+        </p>
+    <blockquote>
     """,
     """
     <blockquote></blockquote>
     <blockquote>
-    <p class="row">
-            <span class="ih" id="images:5I65Fb5M23E13Mf3N6c5pacc00e0eddaa138c.jpg">&nbsp;</span>
-             May 25 - <a href="http://portland.craigslist.org/mlt/for/3038377527.html">Python Aquarium Cleaner With Extension -</a>
-             $20<font size="-1"> (SE Portland)</font> <small class="gc"><a href="/for/">general - by owner</a></small> <span class="p"> pic</span><br class="c">
+        <p class="row">
+        <span class="ih" id="images:5O25Ke5He3L83F73Mfc64eda5403b66e813b9.jpg">&nbsp;</span>
+        <span class="itemdate"></span>
+        <a href="http://portland.craigslist.org/mlt/sys/3058061021.html">D525MWV Intel Atom 1.8Ghz MotherBoard </a>
+        <span class="itemsep"> - </span>
+        <span class="itemph"></span>
+        <span class="itempp"> $50</span>
+        <span class="itempn"><font size="-1"> (Ne Portland)</font></span>
+        <span class="itempx"> <span class="p"> pic</span></span>
+        <span class="itemcg"> <small class="gc"><a href="/sys/">computers - by owner</a></small></span><br class="c">
     </p>
     </blockquote>
     """
