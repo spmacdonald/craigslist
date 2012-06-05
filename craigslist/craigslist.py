@@ -17,7 +17,7 @@ _extractor_registry = {}
 def register_extractor(*args):
     """
     Register `fn` as an extractor for any Craigslist category passed in *args
-    Arguments should be Craiglist search categories like 'sss' or 'jjj'.
+    Arguments should be Craigslist search categories like 'sss' or 'jjj'.
 
     e.g., 
 
@@ -51,7 +51,7 @@ def get_price(text):
     """
     Try to extract a price from `text`.
     """
-    money = re.compile('^\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d{2})?$')
+    money = re.compile('^\$(\d{1,3}(,\d{3})*|(\d+))(\.\d{2})?$')
     matches = money.match(text.replace('-', '').strip())
     price = matches and matches.group(0) or None
     
@@ -63,13 +63,13 @@ def get_price(text):
 def extract_item_for_sale(item):
     """ Extract a Craigslist item for sale. """
     result = {}
-    result['image'] = item.contents[1].get('id')
-    result['date'] = item.contents[2].replace('-', '').strip()
-    result['link'] = item.contents[3].get('href')
-    result['desc'] = item.contents[3].text.replace('-', '').strip()
+    result['image'] = item.contents[0].get('id')
+    result['date'] = item.contents[1].text.replace('-', '').strip()
+    result['link'] = item.contents[2].get('href')
+    result['desc'] = item.contents[2].text.strip()
     result['location'] = item.contents[5].text.strip()
 
-    price = get_price(item.contents[4])
+    price = get_price(item.contents[4].text)
 
     if price:
         result['price'] = price
@@ -81,10 +81,10 @@ def extract_item_for_sale(item):
 def extract_job(item):
     """ Extra a Craigslist job posting. """
     result = {}
-    result['date'] = item.contents[0].replace('-', '').strip()
+    result['date'] = item.contents[0].text.replace('-', '').strip()
     result['link'] = item.contents[1].get('href')
     result['desc'] = item.contents[1].text
-    result['location'] = item.contents[3].text
+    result['location'] = item.contents[2].text
 
     category = item.find('small')
 
@@ -131,7 +131,7 @@ def extract_housing(item):
         result['desc'] = item.contents[1].text.replace('-', '').strip()
 
     result['link'] = item.contents[1].get('href')
-    result['date'] = item.contents[0].replace('-', '').strip()
+    result['date'] = item.contents[0].text.replace('-', '').strip()
     result['location'] = item.contents[3].text.strip()
 
     small = item.find('small')
@@ -148,17 +148,18 @@ def get_soup(text):
 def get_items_for_category(category, text):
     items = []
 
-    # The second blockquote contains the items. It isn't named.
     content = get_soup(text).findAll('blockquote')[1]
 
     for el in content.findAll('p'):
         extractor = get_extractor(category)
+        # Filter out newlines and item separator spans.
+        el.contents = filter(lambda x: x != u'\n' and x.text != u'-', el.contents)
         items.append(extractor(el))
 
     return items
 
 
-# Craigslist search types. These values indicate whether to seach all text in
+# Craigslist search types. These values indicate whether to search all text in
 # posts or just titles. The query arg for this value is 'srchType'.
 SEARCH_ALL = 'A'
 SEARCH_TITLES = 'T'
