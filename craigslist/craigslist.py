@@ -41,7 +41,7 @@ def get_extractor(category):
     """
     fn = _extractor_registry.get(category, None)
 
-    if fn == None:
+    if fn is None:
         fn = _extractor_registry.get('default', None)
 
     return fn
@@ -50,9 +50,15 @@ def get_extractor(category):
 def get_price(text):
     """
     Try to extract a price from `text`.
+
+    # See: http://stackoverflow.com/questions/2150205/can-somebody-explain-a-money-regex-that-just-checks-if-the-value-matches-some-pa
     """
-    money = re.compile('^\$(\d{1,3}(,\d{3})*|(\d+))(\.\d{2})?$')
-    matches = money.match(text.replace('-', '').strip())
+    money = re.compile('|'.join([
+      r'\$?(\d*\.\d{1,2})$',  # e.g., $.50, .50, $1.50, $.5, .5
+      r'\$?(\d+)$',           # e.g., $500, $5, 500, 5
+      r'\$(\d+\.?)',         # e.g., $5.
+    ]))
+    matches = money.search(text)
     price = matches and matches.group(0) or None
     
     if price:
@@ -63,11 +69,14 @@ def get_price(text):
 def extract_item_for_sale(item):
     """ Extract a Craigslist item for sale. """
     result = {}
-    result['image'] = item.contents[0].get('id')
     result['date'] = item.contents[1].text.replace('-', '').strip()
     result['link'] = item.contents[2].get('href')
     result['desc'] = item.contents[2].text.strip()
     result['location'] = item.contents[5].text.strip()
+    # If this tag has text in it, the item has an image.
+    result['image'] = item.contents[6].text != ''
+    # This value is provided by Craigslist and need not be stripped.
+    result['category'] = item.contents[7].text
 
     price = get_price(item.contents[4].text)
 
@@ -85,6 +94,8 @@ def extract_job(item):
     result['link'] = item.contents[1].get('href')
     result['desc'] = item.contents[1].text
     result['location'] = item.contents[2].text
+    result['image'] = item.contents[3].text != ''
+    result['category'] = item.contents[4].text
 
     category = item.find('small')
 
@@ -99,15 +110,13 @@ def extract_housing(item):
     """ Extract a Craigslist housing unit for sale or rental. """
     result = {}
 
+    result['desc'] = item.contents[1].text.strip()
+    result['price'] = get_price(result['desc'])
+
     # Isolate the price and details (bedrooms, square feet) from a title like:
     # '$1425 / 3br - 1492ft - Beautiful Sherwood Home Could Be Yours, Move in March 1st'
     if '/' in item.contents[1].text:
         parts = item.contents[1].text.split('/')
-        price = get_price(parts[0])
-
-        if price:
-            result['price'] = price
-
         rental_details = parts[1].split('-')
 
         for detail in rental_details:
@@ -125,18 +134,15 @@ def extract_housing(item):
                     bedrooms = 0
 
                 result['bedrooms'] = bedrooms
-            else:
-                result['desc'] = detail
-    else:
-        result['desc'] = item.contents[1].text.replace('-', '').strip()
 
     result['link'] = item.contents[1].get('href')
     result['date'] = item.contents[0].text.replace('-', '').strip()
-    result['location'] = item.contents[3].text.strip()
+    result['location'] = item.contents[2].text.strip()
+    result['image'] = item.contents[3].text != ''
 
     small = item.find('small')
     if small:
-        result['type'] = small.text
+        result['category'] = small.text
 
     return result
 
@@ -147,11 +153,10 @@ def get_soup(text):
 
 def get_items_for_category(category, text):
     items = []
-
     content = get_soup(text).findAll('blockquote')[1]
+    extractor = get_extractor(category)
 
     for el in content.findAll('p'):
-        extractor = get_extractor(category)
         # Filter out newlines and item separator spans.
         el.contents = filter(lambda x: x != u'\n' and x.text != u'-', el.contents)
         items.append(extractor(el))

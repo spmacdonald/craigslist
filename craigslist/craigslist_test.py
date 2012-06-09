@@ -70,17 +70,15 @@ class TestCraigslist(unittest.TestCase):
         Craigslist post title that lacks a price.
         """
         result = craigslist.get_items_for_category('sss', fixtures.for_sale[0])
-        self.assertEqual(
-            result[0]['link'],
-            "http://portland.craigslist.org/clk/sys/3058025999.html")
 
-        self.assertEqual(
-            result[0]['desc'],
-            'i want to trade my laptop for a utility trailer')
-
-        self.assertEqual(
-            result[0]['location'], '(Kelso)')
-
+        self.assertEqual(result[0]['date'], 'Jun 7')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/clk/sys/3058025999.html")
+        self.assertEqual(result[0]['desc'],
+                         'i want to trade my laptop for a utility trailer')
+        self.assertEqual(result[0]['location'], '(Kelso)')
+        self.assertEqual(result[0]['category'], 'computers - by owner')
+        self.assertFalse(result[0]['image'])
         self.assertFalse('price' in result[0])
 
     def test_extract_item_for_sale_with_price(self):
@@ -90,18 +88,83 @@ class TestCraigslist(unittest.TestCase):
         """
         result = craigslist.get_items_for_category('sss', fixtures.for_sale[1])
 
-        self.assertEqual(
-            result[0]['link'],
-            "http://portland.craigslist.org/mlt/sys/3058061021.html")
+        self.assertEqual(result[0]['date'], 'Jun 7')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/mlt/sys/3058061021.html")
+        self.assertEqual(result[0]['desc'],
+                         'D525MWV Intel Atom 1.8Ghz MotherBoard')
+        self.assertEqual(result[0]['location'], '(Ne Portland)')
+        self.assertTrue(result[0]['image'])
+        self.assertEqual(result[0]['category'], 'computers - by owner')
+        self.assertEqual(result[0]['price'], 50.00)
 
-        self.assertEqual(
-            result[0]['desc'], 'D525MWV Intel Atom 1.8Ghz MotherBoard')
+    def test_extract_job(self):
+        """
+        Verify that `craigslist.extract_job` extracts a job from a mock
+        Craigslist item.
+        """
+        result = craigslist.get_items_for_category('jjj', fixtures.jobs[0])
 
-        self.assertEqual(
-            result[0]['location'], '(Ne Portland)')
+        self.assertEqual(result[0]['date'], 'Jun  6')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/mlt/sof/3061734673.html")
+        self.assertEqual(result[0]['desc'], 'Senior QA Engineer')
+        self.assertEqual(result[0]['location'], '(Portland, OR)')
+        self.assertFalse(result[0]['image'])
+        self.assertEqual(result[0]['category'], 'software/QA/DBA/etc')
 
-        self.assertEqual(
-            result[0]['price'], 50.00)
+    def test_extract_housing_with_price_only(self):
+        """
+        Verify that `craigslist.extract_housing` extracts a housing item
+        correctly when the item specifies only a price.
+        """
+        result = craigslist.get_items_for_category('hhh', fixtures.housing[0])
+
+        self.assertEqual(result[0]['date'], 'Jun  7')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/mlt/vac/3064470120.html")
+        self.assertEqual(result[0]['location'], '(King)')
+        self.assertEqual(result[0]['image'], True)
+        self.assertEqual(result[0]['price'], 80)
+        self.assertEqual(result[0]['desc'],
+                         "$80 Stay at 'inner northeast charmer' by the night")
+        self.assertEqual(result[0]['category'], 'vacation rentals')
+
+    def test_extract_housing_with_rooms(self):
+        """
+        Verify that `craigslist.extract_housing` extracts a housing item
+        correctly when the item specifies price and # of rooms.
+        """
+        result = craigslist.get_items_for_category('hhh', fixtures.housing[1])
+
+        self.assertEqual(result[0]['date'], 'Jun  7')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/mlt/apa/3064412526.html")
+        self.assertEqual(result[0]['location'], '(1736 NE Killingsworth St.)')
+        self.assertEqual(result[0]['image'], False)
+        self.assertEqual(result[0]['price'], 800)
+        self.assertEqual(result[0]['desc'],
+                         "$800 / 1br - Great apartment near Alberta Arts")
+        self.assertEqual(result[0]['bedrooms'], 1)
+        self.assertEqual(result[0]['category'], 'apts/housing for rent')
+
+    def test_extract_housing_with_rooms_and_sqft(self):
+        """
+        Verify that `craigslist.extract_housing` extracts a housing item
+        correctly when the item specifies price, # of rooms and square feet.
+        """
+        result = craigslist.get_items_for_category('hhh', fixtures.housing[2])
+
+        self.assertEqual(result[0]['date'], 'Jun  7')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/wsc/reb/3063998127.html")
+        self.assertEqual(result[0]['location'], '(Tigard)')
+        self.assertEqual(result[0]['image'], True)
+        self.assertEqual(result[0]['price'], 295000)
+        self.assertEqual(result[0]['desc'],
+                         u"$295000 / 4br - 2594ft\xb2 - Beautiful 4 "
+                         "Bedroom With Hardwoods")
+        self.assertEqual(result[0]['category'], 'real estate - by broker')
 
 
 if __name__ == '__main__':
