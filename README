@@ -1,13 +1,14 @@
 # craigslist.py: A Python API for searching Craigslist
 
-This is a WIP project to make Craigslist searchable via a Python API. The API
+This WIP library makes Craigslist searchable via a Python API. The API
 works by scraping Craigslist directly, which I've been told can get your IP
 banned at high volumes.
 
 Status:
     - Decent job of parsing job, housing and for-sale posts
-    - Relies on raw location (domain name) and category ("hhh", "sss", etc.) data
+    - Relies on raw location (domain name) and category ("hhh", "sss", etc.) data as input
+    - Tests
 
 TODO:
-    - Tests
+    - More tests
     - Wrap locations and search categories in constants
