@@ -1,4 +1,4 @@
-# craigslist.py: A Python API for searching Craigslist
+# craigslist.py: A Python library for searching Craigslist
 
 This WIP library makes Craigslist searchable via a Python API. The API
 works by scraping Craigslist directly, which I've been told can get your IP
