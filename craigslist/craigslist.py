@@ -9,42 +9,55 @@ import requests
 from BeautifulSoup import BeautifulSoup
 
 
-# a dictionary of extractor functions, each mapped to a Craigslist search
-# category key like 'jjj' or 'hhh'
-_extractor_registry = {}
-
-
-def register_extractor(*args):
+class ExtractorRegistry(object):
     """
-    Register `fn` as an extractor for any Craigslist category passed in *args
-    Arguments should be Craigslist search categories like 'sss' or 'jjj'.
-
-    e.g., 
-
-        @register_extractor('jjj', 'hhh')
-        def my_extractor(text):
-            ...
+    A wrapper around a dictionary of functions that each extract data from
+    Craigslist posts made in a specific category, like housing or jobs.
     """
-    def decorator(fn):
-        for category in args:
-            _extractor_registry[category] = fn
-        def inner_function(*args, **kwargs):
-            return fn(*args, **kwargs)
-        return inner_function
-    return decorator
+    extractors = {}
+
+    def register(self, *args):
+        """
+        Register the decorated function as an extractor for any Craigslist
+        category passed in *args Arguments should be Craigslist search
+        categories like 'sss' or 'jjj'.
+
+        e.g.,
+
+            @extractors.register('jjj', 'hhh')
+            def my_extractor(text):
+                ...
+        """
+        def decorator(fn):
+            for category in args:
+                if category in self.extractors:
+                    raise ValueError('Category is already registered: %s' % category)
+                self.extractors[category] = fn
+            def inner_function(*args, **kwargs):
+                return fn(*args, **kwargs)
+            return inner_function
+        return decorator
+
+    def get(self, category):
+        """
+        Get the extractor function for `category`.
+        If no function is registered for `category`, return the default extractor.
+        """
+        fn = self.extractors.get(category, None)
+
+        if fn is None:
+            fn = self.extractors.get('default', None)
+
+        return fn
 
 
-def get_extractor(category):
-    """ 
-    Get the extractor function for `category`.
-    If no function is registered for `category`, return the default extractor.    
-    """
-    fn = _extractor_registry.get(category, None)
+    def deregister(self, category):
+        """ Deregister the extractor function for `category`. """
+        if category in self.extractors:
+            del(self.extractors[category])
 
-    if fn is None:
-        fn = _extractor_registry.get('default', None)
 
-    return fn
+extractors = ExtractorRegistry()
 
 
 def get_price(text):
@@ -54,9 +67,14 @@ def get_price(text):
     # See: http://stackoverflow.com/questions/2150205/can-somebody-explain-a-money-regex-that-just-checks-if-the-value-matches-some-pa
     """
     money = re.compile('|'.join([
-      r'\$?(\d*\.\d{1,2})$',  # e.g., $.50, .50, $1.50, $.5, .5
-      r'\$?(\d+)$',           # e.g., $500, $5, 500, 5
-      r'\$(\d+\.?)',         # e.g., $5.
+        # $.50, .50, $1.50, $.5, .5
+        r'\$?(\d*\.\d{1,2})$',
+
+        # $500, $5, 500, 5
+        r'\$?(\d+)$',
+
+        # $5.
+        r'\$(\d+\.?)',
     ]))
     matches = money.search(text)
     price = matches and matches.group(0) or None
@@ -65,18 +83,19 @@ def get_price(text):
         return float(price[1:])
 
 
-@register_extractor('default', 'sss')
+@extractors.register('default', 'sss')
 def extract_item_for_sale(item):
     """ Extract a Craigslist item for sale. """
-    result = {}
-    result['date'] = item.contents[1].text.replace('-', '').strip()
-    result['link'] = item.contents[2].get('href')
-    result['desc'] = item.contents[2].text.strip()
-    result['location'] = item.contents[5].text.strip()
+    result = {
+        'date': item.contents[1].text.replace('-', '').strip(),
+        'link': item.contents[2].get('href'),
+        'desc': item.contents[2].text.strip(),
+        'location': item.contents[5].text.strip(),
+        'image': item.contents[6].text != '',
+        'category': item.contents[7].text
+    }
     # If this tag has text in it, the item has an image.
-    result['image'] = item.contents[6].text != ''
-    # This value is provided by Craigslist and need not be stripped.
-    result['category'] = item.contents[7].text
+    # This value is provided by Craigslist and need not be strip
 
     price = get_price(item.contents[4].text)
 
@@ -86,16 +105,16 @@ def extract_item_for_sale(item):
     return result
 
 
-@register_extractor('jjj', 'ggg', 'bbb')
+@extractors.register('jjj', 'ggg', 'bbb')
 def extract_job(item):
     """ Extra a Craigslist job posting. """
-    result = {}
-    result['date'] = item.contents[0].text.replace('-', '').strip()
-    result['link'] = item.contents[1].get('href')
-    result['desc'] = item.contents[1].text
-    result['location'] = item.contents[2].text
-    result['image'] = item.contents[3].text != ''
-    result['category'] = item.contents[4].text
+    result = {
+        'date': item.contents[0].text.replace('-', '').strip(),
+        'link': item.contents[1].get('href'),
+        'desc': item.contents[1].text, 'location': item.contents[2].text,
+        'image': item.contents[3].text != '',
+        'category': item.contents[4].text
+    }
 
     category = item.find('small')
 
@@ -105,12 +124,10 @@ def extract_job(item):
     return result 
 
 
-@register_extractor('hhh')
+@extractors.register('hhh')
 def extract_housing(item):
     """ Extract a Craigslist housing unit for sale or rental. """
-    result = {}
-
-    result['desc'] = item.contents[1].text.strip()
+    result = {'desc': item.contents[1].text.strip()}
     result['price'] = get_price(result['desc'])
 
     # Isolate the price and details (bedrooms, square feet) from a title like:
@@ -154,7 +171,7 @@ def get_soup(text):
 def get_items_for_category(category, text):
     items = []
     content = get_soup(text).findAll('blockquote')[1]
-    extractor = get_extractor(category)
+    extractor = extractors.get(category)
 
     for el in content.findAll('p'):
         # Filter out newlines and item separator spans.
