@@ -1,3 +1,5 @@
+location = 'http://portland.craigslist.org/'
+
 for_sale = [
     """
     <blockquote></blockquote>

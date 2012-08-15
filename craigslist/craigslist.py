@@ -168,9 +168,18 @@ def get_soup(text):
     return BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
 
 
-def get_items_for_category(category, text):
+def get_posts_for_category(category, location, html):
+    """
+    Get Craigslist all posts for the category `category`.
+
+    Extract data from each post using the registered extractor and return a
+    list of dictionaries containing the extracted data.
+
+    If there are additional pages, recursively call `get_posts_for_category` to
+    find items in the next page of the search.
+    """
     items = []
-    content = get_soup(text).findAll('blockquote')[1]
+    content = get_soup(html).findAll('blockquote')[1]
     extractor = extractors.get(category)
 
     for el in content.findAll('p'):
@@ -178,23 +187,29 @@ def get_items_for_category(category, text):
         el.contents = filter(lambda x: x != u'\n' and x.text != u'-', el.contents)
         items.append(extractor(el))
 
+    next_page_text = content.find('b', text='Next >>')
+
+    if next_page_text:
+        url =  next_page_text.parent.parent.get('href')
+        items += get_posts_for_category(category, location, requests.get(url).text)
+
     return items
 
 
-# Craigslist search types. These values indicate whether to search all text in
-# posts or just titles. The query arg for this value is 'srchType'.
+# Perform an all-text search.
 SEARCH_ALL = 'A'
+
+# Search only titles.
 SEARCH_TITLES = 'T'
 
 
 def search(location, category, query, search_type=SEARCH_ALL):
     """
-    Search each Craigslist location `location` (iterable) for passing
-    `category` to Craigslist as the search category and `query` as the user's
-    search. 
+    Search Craigslist location `location` (a Craigslist URL like
+    http://portland.craigslist.org) for posts in `category` matching `query`.
 
-    `search_type` indicates whether this is an all-text search ('A') or just a
-    title search ('T').
+    `search_type` indicates whether this is an all-text search ('A') or a title
+    search ('T').
     """
     valid_search_types = [SEARCH_ALL, SEARCH_TITLES]
 
@@ -202,8 +217,8 @@ def search(location, category, query, search_type=SEARCH_ALL):
         raise ValueError(
             'Search type must be one of: %s.' % ', '.join(valid_search_types))
 
-    # 'srchType=A': Default to an "all-text" search rather than just titles.
-    search_url = '%ssearch/%s?query=%s&srchType=A' % (
-        location, category, query)
+    search_url = '%ssearch/%s?query=%s&srchType=%s' % (
+        location, category, query, search_type)
 
-    return get_items_for_category(category, requests.get(search_url).text)
+    return get_posts_for_category(category, location,
+                                  requests.get(search_url).text)

@@ -80,7 +80,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_item_for_sale` works with a mock
         Craigslist post title that lacks a price.
         """
-        result = craigslist.get_items_for_category('sss', fixtures.for_sale[0])
+        result = craigslist.get_posts_for_category('sss', fixtures.location,
+                                                   fixtures.for_sale[0])
 
         self.assertEqual(result[0]['date'], 'Jun 7')
         self.assertEqual(result[0]['link'],
@@ -97,7 +98,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_item_for_sale` works with a mock
         Craigslist post title that has a price.
         """
-        result = craigslist.get_items_for_category('sss', fixtures.for_sale[1])
+        result = craigslist.get_posts_for_category('sss', fixtures.location,
+                                                   fixtures.for_sale[1])
 
         self.assertEqual(result[0]['date'], 'Jun 7')
         self.assertEqual(result[0]['link'],
@@ -114,7 +116,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_job` extracts a job from a mock
         Craigslist item.
         """
-        result = craigslist.get_items_for_category('jjj', fixtures.jobs[0])
+        result = craigslist.get_posts_for_category('jjj', fixtures.location,
+                                                   fixtures.jobs[0])
 
         self.assertEqual(result[0]['date'], 'Jun  6')
         self.assertEqual(result[0]['link'],
@@ -129,7 +132,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_housing` extracts a housing item
         correctly when the item specifies only a price.
         """
-        result = craigslist.get_items_for_category('hhh', fixtures.housing[0])
+        result = craigslist.get_posts_for_category('hhh', fixtures.location,
+                                                   fixtures.housing[0])
 
         self.assertEqual(result[0]['date'], 'Jun  7')
         self.assertEqual(result[0]['link'],
@@ -146,7 +150,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_housing` extracts a housing item
         correctly when the item specifies price and # of rooms.
         """
-        result = craigslist.get_items_for_category('hhh', fixtures.housing[1])
+        result = craigslist.get_posts_for_category('hhh', fixtures.location,
+                                                   fixtures.housing[1])
 
         self.assertEqual(result[0]['date'], 'Jun  7')
         self.assertEqual(result[0]['link'],
@@ -164,7 +169,8 @@ class TestCraigslist(unittest.TestCase):
         Verify that `craigslist.extract_housing` extracts a housing item
         correctly when the item specifies price, # of rooms and square feet.
         """
-        result = craigslist.get_items_for_category('hhh', fixtures.housing[2])
+        result = craigslist.get_posts_for_category('hhh', fixtures.location,
+                                                   fixtures.housing[2])
 
         self.assertEqual(result[0]['date'], 'Jun  7')
         self.assertEqual(result[0]['link'],
