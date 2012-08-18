@@ -1,2 +1,2 @@
-from craigslist import *
+from craigslist import search
 
