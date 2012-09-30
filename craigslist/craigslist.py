@@ -33,6 +33,7 @@ class ExtractorRegistry(object):
                 if category in self.extractors:
                     raise ValueError('Category is already registered: %s' % category)
                 self.extractors[category] = fn
+
             def inner_function(*args, **kwargs):
                 return fn(*args, **kwargs)
             return inner_function
@@ -49,7 +50,6 @@ class ExtractorRegistry(object):
             fn = self.extractors.get('default', None)
 
         return fn
-
 
     def deregister(self, category):
         """ Deregister the extractor function for `category`. """
@@ -78,7 +78,7 @@ def get_price(text):
     ]))
     matches = money.search(text)
     price = matches and matches.group(0) or None
-    
+
     if price:
         return float(price[1:])
 
@@ -92,8 +92,16 @@ def extract_item_for_sale(item):
         'desc': item.contents[2].text.strip(),
         'location': item.contents[5].text.strip(),
         'image': item.contents[6].text != '',
-        'category': item.contents[7].text
     }
+
+    # TODO: Category markup is occasionally bad. We should probably wrap
+    # all references to `item.contents` indexes in a wrapper that tests for
+    # `IndexError`.
+    try:
+        result['category'] = item.contents[7].text
+    except IndexError:
+        result['category'] = ''
+
     # If this tag has text in it, the item has an image.
     # This value is provided by Craigslist and need not be strip
 
@@ -121,7 +129,7 @@ def extract_job(item):
     if category:
         result['category'] = category.text
 
-    return result 
+    return result
 
 
 @extractors.register('hhh')
@@ -190,7 +198,7 @@ def get_posts_for_category(category, location, html):
     next_page_text = content.find('b', text='Next >>')
 
     if next_page_text:
-        url =  next_page_text.parent.parent.get('href')
+        url = next_page_text.parent.parent.get('href')
         items += get_posts_for_category(category, location, requests.get(url).text)
 
     return items

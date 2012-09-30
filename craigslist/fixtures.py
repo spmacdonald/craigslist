@@ -32,6 +32,21 @@ for_sale = [
         <span class="itemcg"> <small class="gc"><a href="/sys/">computers - by owner</a></small></span><br class="c">
     </p>
     </blockquote>
+    """,
+    """
+    <blockquote></blockquote>
+    <blockquote>
+    <p class="row" data-latitude="" data-longitude="">
+        <span class="ih" id="images:5I85U65J83k03K93N6c9d2274a11a71f61303.jpg">
+        </span>
+        <span class="itemdate"> Sep 13</span>
+        <a href="http://corvallis.craigslist.org/sys/3269398742.html">Laptop RAM 1 GB PC2-4200S - $5</a>
+        <span class="itempn"><font size="-1"> (Corvallis, OR)</font></span>
+        <span class="itempx"> <span class="p"> pic</span></span>
+        <span class="itemcg" title="sys"> <<<i><a href="http://corvallis.craigslist.org/sys/">computers - by owner</a></i></span>
+        <br class="c" />
+    </p>
+    </blockquote>
     """
 ]
 

@@ -2,6 +2,7 @@ import os
 
 from setuptools import setup
 
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
@@ -12,7 +13,7 @@ setup(
     author='Andrew Brookins',
     author_email='a@andrewbrookins.com',
     url='https://github.com/abrookins/craigslist',
-    version='0.08',
+    version='0.09',
     packages=['craigslist'],
     install_requires=[
         'BeautifulSoup==3.2.0',

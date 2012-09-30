@@ -183,6 +183,14 @@ class TestCraigslist(unittest.TestCase):
                          "Bedroom With Hardwoods")
         self.assertEqual(result[0]['category'], 'real estate - by broker')
 
+    def test_bad_category_value(self):
+        """
+        Regression test for a `ValueError` on badly-formed HTML.
+        """
+        result = craigslist.get_posts_for_category('sss', fixtures.location,
+                                                   fixtures.for_sale[2])
+        self.assertEqual(result[0]['category'], '')
+
 
 if __name__ == '__main__':
     unittest.main()
