@@ -126,5 +126,41 @@ housing = [
             <span class="itemcg"> <small class="gc"><a href="/reb/">real estate - by broker</a></small></span>
         </p>
     </blockquote>
+    """,
+    """
+    <blockquote></blockquote>
+    <blockquote>
+    <p class="row" data-latitude="" data-longitude="">
+        <span class="ih" id="images:3G93M23I95N25E85Jdcbpa2b8111a5e8c1a42.jpg">&nbsp;</span>
+        <span class="itemdate"> Dec 21</span>
+        <span class="itemsep"> - </span>
+        <a href="http://portland.craigslist.org/mlt/apa/3433985329.html">Modern Furnished Home - Short term OK -Pets OK</a>
+        <span class="itemsep"> - </span>
+        <span class="itemph">$2300 / 3br - </span>
+        <span class="itempp"></span>
+        <span class="itempn"><font size="-1"> (Dekum - Alberta)</font></span>
+        <span class="itemcg" title="apa"> <small class="gc"><a href="/apa/">apts/housing for rent</a></small></span>
+        <span class="itempx"> <span class="p"> pic</span></span>
+        <br class="c">
+    </p>
+    """,
+
+    """
+    <blockquote></blockquote>
+    <blockquote>
+    <p class="row" data-latitude="45.5682501767752" data-longitude="-122.63279249111">
+        <span class="ih" id="images:3Ef3L63J35Kd5Fc5J5cca63faad3f9dc21407.jpg">&nbsp;</span>
+        <span class="itemdate"> Dec 21</span>
+        <span class="itemsep"> - </span>
+        <a href="http://portland.craigslist.org/mlt/roo/3468660599.html">Beautiful Large Room-huge closet</a>
+        <span class="itemsep"> - </span>
+        <span class="itemph">$600 / 200ft&sup2; - </span>
+        <span class="itempp"></span>
+        <span class="itempn"><font size="-1"> (Alberta/Concordia)</font></span>
+        <span class="itemcg" title="roo"> <small class="gc"><a href="/roo/">rooms & shares</a></small></span>
+        <span class="itempx"> <span class="p"> pic&nbsp;<span class="maptag" id="maptagid_3468660599">map</span></span></span>
+        <br class="c">
+    </p>
     """
 ]
+

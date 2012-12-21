@@ -6,6 +6,7 @@ Copyright (c) 2012 Andrew Brookins. All Rights Reserved.
 
 import re
 import requests
+import urllib
 from BeautifulSoup import BeautifulSoup
 
 
@@ -32,28 +33,37 @@ def get_price(text):
         return float(price[1:])
 
 
-def extract_item_for_sale(item):
-    """ Extract a Craigslist item for sale. """
+def get_item_dict(item):
+    """
+    Get generic Craigslist values for an item.
+
+    Many features of an item, like the date, use the same span classes across
+    categories of the site.
+    """
+    date = item.find('span', 'itemdate')
+    link = item.find('a')
+    pix = item.find('span', 'p')
+
     result = {
-        'date': item.contents[1].text.replace('-', '').strip(),
-        'link': item.contents[2].get('href'),
-        'desc': item.contents[2].text.strip(),
-        'location': item.contents[5].text.strip(),
-        'image': item.contents[6].text != '',
+        'date': date.text.strip(),
+        'link': link.get('href'),
+        'desc': link.text.strip(),
+        'location': item.find('span', 'itempn').text.strip(),
+        'image': True if pix and pix.text else False
     }
 
-    # TODO: Category markup is occasionally bad. Should this wrap all
-    # references to `item.contents` indexes in a wrapper that tests for
-    # `IndexError`?
-    try:
-        result['category'] = item.contents[7].text
-    except IndexError:
-        result['category'] = ''
+    cat = item.find('span', 'itemcg')
+    if cat:
+        result['category'] = cat.text
 
-    # If this tag has text in it, the item has an image.
-    # This value is provided by Craigslist and need not be strip
+    return result
 
-    price = get_price(item.contents[4].text)
+
+def extract_item_for_sale(item):
+    """ Extract a Craigslist item for sale. """
+    result = get_item_dict(item)
+    price = item.find('span', 'itempp')
+    price = get_price(price.text) if price else None
 
     if price:
         result['price'] = price
@@ -63,6 +73,8 @@ def extract_item_for_sale(item):
 
 def extract_job(item):
     """ Extra a Craigslist job posting. """
+    results = get_item_dict(item)
+
     result = {
         'date': item.contents[0].text.replace('-', '').strip(),
         'link': item.contents[1].get('href'),
@@ -81,13 +93,18 @@ def extract_job(item):
 
 def extract_housing(item):
     """ Extract a Craigslist housing unit for sale or rental. """
-    result = {'desc': item.contents[1].text.strip()}
-    result['price'] = get_price(result['desc'])
+    result = get_item_dict(item)
+    details = item.find('span', 'itemph')
+    details = details.text if details else item.find('a').text
+
+    price = get_price(details)
+    if price:
+        result['price'] = price
 
     # Isolate the price and details (bedrooms, square feet) from a title like:
     # '$1425 / 3br - 1492ft - Beautiful Sherwood Home Could Be Yours, Move in March 1st'
-    if '/' in item.contents[1].text:
-        parts = item.contents[1].text.split('/')
+    if '/' in details:
+        parts = details.split('/')
         rental_details = parts[1].split('-')
 
         for detail in rental_details:
@@ -105,15 +122,6 @@ def extract_housing(item):
                     bedrooms = 0
 
                 result['bedrooms'] = bedrooms
-
-    result['link'] = item.contents[1].get('href')
-    result['date'] = item.contents[0].text.replace('-', '').strip()
-    result['location'] = item.contents[2].text.strip()
-    result['image'] = item.contents[3].text != ''
-
-    small = item.find('small')
-    if small:
-        result['category'] = small.text
 
     return result
 
@@ -179,6 +187,7 @@ def search(location, category, query, search_type=SEARCH_ALL):
     search ('T').
     """
     valid_search_types = [SEARCH_ALL, SEARCH_TITLES]
+    query = urllib.quote(query)
 
     if not search_type in valid_search_types:
         raise ValueError(

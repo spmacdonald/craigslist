@@ -147,13 +147,31 @@ class TestCraigslist(unittest.TestCase):
                          "Bedroom With Hardwoods")
         self.assertEqual(result[0]['category'], 'real estate - by broker')
 
+    def test_extract_housing_with_rooms_and_coords(self):
+        """
+        Verify that `craigslist.extract_housing` extracts a housing item
+        correctly when the item specifies price, # of rooms and coordinates.
+        """
+        result = craigslist.get_posts_for_category('hhh', fixtures.location,
+                                                   fixtures.housing[3])
+
+        self.assertEqual(result[0]['date'], 'Dec 21')
+        self.assertEqual(result[0]['link'],
+                         "http://portland.craigslist.org/mlt/apa/3433985329.html")
+        self.assertEqual(result[0]['location'], '(Dekum - Alberta)')
+        self.assertEqual(result[0]['image'], True)
+        self.assertEqual(result[0]['price'], 2300.0)
+        self.assertEqual(result[0]['desc'],
+                         u"Modern Furnished Home - Short term OK -Pets OK")
+        self.assertEqual(result[0]['category'], 'apts/housing for rent')
+
     def test_bad_category_value(self):
         """
-        Regression test for a `ValueError` on badly-formed HTML.
+        Regression for badly-formed HTML in category field.
         """
         result = craigslist.get_posts_for_category('sss', fixtures.location,
                                                    fixtures.for_sale[2])
-        self.assertEqual(result[0]['category'], '')
+        self.assertEqual(result[0]['category'], '<<computers - by owner')
 
 
 if __name__ == '__main__':
