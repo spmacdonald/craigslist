@@ -9,42 +9,6 @@ from BeautifulSoup import BeautifulSoup
 
 class TestCraigslist(unittest.TestCase):
 
-    def test_can_register_extractors(self):
-        """ Verify that we can register and retrieve an extractor function. """
-
-        @craigslist.extractors.register('test_category')
-        def test_fn():
-            """ A mock extractor. """
-            return "Testing"
-
-        fn = craigslist.extractors.get('test_category')
-
-        self.assertEqual(fn(), test_fn())
-
-
-    def test_cannot_register_same_category_twice(self):
-        craigslist.extractors.register('test_category')
-        try:
-            craigslist.extractors.register('test_category')
-        except ValueError as e:
-            self.assertEqual(str(e), 'Category is already registered: test_category')
-
-    def test_get_default_extractor(self):
-        """
-        Verify that requesting an extractor for a category for which we don't
-        have an extractor yields the default extractor.
-        """
-        craigslist.extractors.deregister('default')
-
-        @craigslist.extractors.register('default')
-        def test_fn():
-            """ A mock extractor. """
-            return "Testing"
-
-        fn = craigslist.extractors.get('nonexistent_category')
-
-        self.assertEqual(fn(), test_fn())
-
     def _expect_price(self, text, price):
         """
         Verify that `craigslist.get_price` can extract `price` from `text`.

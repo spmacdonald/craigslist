@@ -9,57 +9,6 @@ import requests
 from BeautifulSoup import BeautifulSoup
 
 
-class ExtractorRegistry(object):
-    """
-    A wrapper around a dictionary of functions that each extract data from
-    Craigslist posts made in a specific category, like housing or jobs.
-    """
-    extractors = {}
-
-    def register(self, *args):
-        """
-        Register the decorated function as an extractor for any Craigslist
-        category passed in *args Arguments should be Craigslist search
-        categories like 'sss' or 'jjj'.
-
-        e.g.,
-
-            @extractors.register('jjj', 'hhh')
-            def my_extractor(text):
-                ...
-        """
-        def decorator(fn):
-            for category in args:
-                if category in self.extractors:
-                    raise ValueError('Category is already registered: %s' % category)
-                self.extractors[category] = fn
-
-            def inner_function(*args, **kwargs):
-                return fn(*args, **kwargs)
-            return inner_function
-        return decorator
-
-    def get(self, category):
-        """
-        Get the extractor function for `category`.
-        If no function is registered for `category`, return the default extractor.
-        """
-        fn = self.extractors.get(category, None)
-
-        if fn is None:
-            fn = self.extractors.get('default', None)
-
-        return fn
-
-    def deregister(self, category):
-        """ Deregister the extractor function for `category`. """
-        if category in self.extractors:
-            del(self.extractors[category])
-
-
-extractors = ExtractorRegistry()
-
-
 def get_price(text):
     """
     Try to extract a price from `text`.
@@ -83,7 +32,6 @@ def get_price(text):
         return float(price[1:])
 
 
-@extractors.register('default', 'sss')
 def extract_item_for_sale(item):
     """ Extract a Craigslist item for sale. """
     result = {
@@ -94,9 +42,9 @@ def extract_item_for_sale(item):
         'image': item.contents[6].text != '',
     }
 
-    # TODO: Category markup is occasionally bad. We should probably wrap
-    # all references to `item.contents` indexes in a wrapper that tests for
-    # `IndexError`.
+    # TODO: Category markup is occasionally bad. Should this wrap all
+    # references to `item.contents` indexes in a wrapper that tests for
+    # `IndexError`?
     try:
         result['category'] = item.contents[7].text
     except IndexError:
@@ -113,7 +61,6 @@ def extract_item_for_sale(item):
     return result
 
 
-@extractors.register('jjj', 'ggg', 'bbb')
 def extract_job(item):
     """ Extra a Craigslist job posting. """
     result = {
@@ -132,7 +79,6 @@ def extract_job(item):
     return result
 
 
-@extractors.register('hhh')
 def extract_housing(item):
     """ Extract a Craigslist housing unit for sale or rental. """
     result = {'desc': item.contents[1].text.strip()}
@@ -176,6 +122,19 @@ def get_soup(text):
     return BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
 
 
+extractors = {
+    ('default', 'sss'): extract_item_for_sale,
+    ('jjj', 'ggg', 'bbb'): extract_job,
+    ('hhh',): extract_housing
+}
+
+
+def get_extractor(category):
+    for categories, fn in extractors.items():
+        if category in categories:
+            return fn
+
+
 def get_posts_for_category(category, location, html):
     """
     Get Craigslist all posts for the category `category`.
@@ -188,7 +147,7 @@ def get_posts_for_category(category, location, html):
     """
     items = []
     content = get_soup(html).findAll('blockquote')[1]
-    extractor = extractors.get(category)
+    extractor = get_extractor(category)
 
     for el in content.findAll('p'):
         # Filter out newlines and item separator spans.
