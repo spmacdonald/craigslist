@@ -59,7 +59,7 @@ def get_item_dict(item):
     return result
 
 
-def extract_item_for_sale(item):
+def extract_item_for_sale(item, filters=None):
     """ Extract a Craigslist item for sale. """
     result = get_item_dict(item)
     price = item.find('span', 'itempp')
@@ -71,7 +71,7 @@ def extract_item_for_sale(item):
     return result
 
 
-def extract_job(item):
+def extract_job(item, filters=None):
     """ Extra a Craigslist job posting. """
     results = get_item_dict(item)
 
@@ -91,7 +91,7 @@ def extract_job(item):
     return result
 
 
-def extract_housing(item):
+def extract_housing(item, filters=None):
     """ Extract a Craigslist housing unit for sale or rental. """
     result = get_item_dict(item)
     details = item.find('span', 'itemph')
@@ -123,6 +123,22 @@ def extract_housing(item):
 
                 result['bedrooms'] = bedrooms
 
+    # Apply any filters. TODO: Make this elegant.
+    min_price = filters.get('min_price', None)
+    max_price = filters.get('max_price', None)
+    min_rooms = filters.get('min_rooms', None)
+    max_rooms = filters.get('max_rooms', None)
+    bedrooms = result.get('bedrooms', None)
+
+    if min_price and price and price <= min_price:
+        return
+    if max_price and price and price >= max_price:
+        return
+    if min_rooms and bedrooms and bedrooms <= min_rooms:
+        return
+    if max_rooms and bedrooms and bedrooms >= max_rooms:
+        return
+
     return result
 
 
@@ -143,7 +159,7 @@ def get_extractor(category):
             return fn
 
 
-def get_posts_for_category(category, location, html):
+def get_posts_for_category(category, location, html, filters=None):
     """
     Get Craigslist all posts for the category `category`.
 
@@ -160,13 +176,16 @@ def get_posts_for_category(category, location, html):
     for el in content.findAll('p'):
         # Filter out newlines and item separator spans.
         el.contents = filter(lambda x: x != u'\n' and x.text != u'-', el.contents)
-        items.append(extractor(el))
+        item = extractor(el, filters)
+        if item:
+            items.append(item)
 
     next_page_text = content.find('b', text='Next >>')
 
     if next_page_text:
         url = next_page_text.parent.parent.get('href')
-        items += get_posts_for_category(category, location, requests.get(url).text)
+        items += get_posts_for_category(category, location,
+                                        requests.get(url).text, filters)
 
     return items
 
@@ -178,7 +197,7 @@ SEARCH_ALL = 'A'
 SEARCH_TITLES = 'T'
 
 
-def search(location, category, query, search_type=SEARCH_ALL):
+def search(location, category, query, search_type=SEARCH_ALL, filters=None):
     """
     Search Craigslist location `location` (a Craigslist URL like
     http://portland.craigslist.org) for posts in `category` matching `query`.
@@ -196,5 +215,6 @@ def search(location, category, query, search_type=SEARCH_ALL):
     search_url = '%ssearch/%s?query=%s&srchType=%s' % (
         location, category, query, search_type)
 
-    return get_posts_for_category(category, location,
-                                  requests.get(search_url).text)
+    html = requests.get(search_url).text
+
+    return get_posts_for_category(category, location, html, filters)

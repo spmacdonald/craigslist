@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import craigslist
-import fixtures
 import unittest
 
-from BeautifulSoup import BeautifulSoup
+import craigslist
+from tests import fixtures
 
 
 class TestCraigslist(unittest.TestCase):

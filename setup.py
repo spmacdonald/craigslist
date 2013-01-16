@@ -13,7 +13,7 @@ setup(
     author='Andrew Brookins',
     author_email='a@andrewbrookins.com',
     url='https://github.com/abrookins/craigslist',
-    version='0.09',
+    version='0.1',
     packages=['craigslist'],
     install_requires=[
         'BeautifulSoup==3.2.0',
