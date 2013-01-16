@@ -170,7 +170,12 @@ def get_posts_for_category(category, location, html, filters=None):
     find items in the next page of the search.
     """
     items = []
-    content = get_soup(html).findAll('blockquote')[1]
+    content = get_soup(html).findAll('blockquote')
+
+    if len(content) < 2:
+        return
+
+    content = content[1]
     extractor = get_extractor(category)
 
     for el in content.findAll('p'):
@@ -216,5 +221,6 @@ def search(location, category, query, search_type=SEARCH_ALL, filters=None):
         location, category, query, search_type)
 
     html = requests.get(search_url).text
+    print html
 
     return get_posts_for_category(category, location, html, filters)
